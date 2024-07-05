@@ -1,0 +1,249 @@
+import math
+import tkinter as tk
+from tkinter import messagebox
+
+
+def check_argument(n):
+    argument_list = ["+", "-", "*", "/", "sqrt"]
+
+    text_label = label_screen.cget("text")
+    if text_label == "0" or text_label[-1] in argument_list:
+        print("Wrong argument")
+    else:
+        label_screen.config(text=text_label + n)
+
+
+def left_check(x, text_label, number_list, arg_list):
+    left_numbers = ""
+
+    for left_shift in range(x):
+        if text_label[left_shift:left_shift-4] == "sqrt":
+            return str(math.sqrt(float(left_numbers)))
+        elif text_label[left_shift] in arg_list:
+            return left_numbers
+        elif text_label[left_shift] in number_list:
+            left_numbers += text_label[left_shift]
+    return left_numbers
+
+
+def right_check(x, text_label, number_list, arg_list):
+    right_numbers = ""
+
+    print("Sprawdzam: " + str(text_label[x:x + 4]))
+    if text_label[x:x + 4] == "sqrt":
+        for sqrt_shift in range(x+4, len(text_label)):
+            if text_label[sqrt_shift] in arg_list:
+                print(str(math.sqrt(float(right_numbers))))
+                return str(math.sqrt(float(right_numbers)))
+
+            elif text_label[sqrt_shift] in number_list:
+                right_numbers += text_label[sqrt_shift]
+
+        print(str(math.sqrt(float(right_numbers))))
+        return str(math.sqrt(float(right_numbers)))
+
+    for right_shift in range(x + 1, len(text_label)):
+        print("PRAWY" + str(right_shift))
+
+        if text_label[right_shift] in arg_list:
+            return right_numbers
+
+        if text_label[right_shift] in number_list:
+            right_numbers += text_label[right_shift]
+
+    return right_numbers
+
+
+def equal():
+    summ: float = 0
+    number_argument_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+    argument_list = ["+", "-", "*", "/"]
+
+    text_label = label_screen.cget("text")
+
+    try:
+        for x in range(len(text_label)):
+
+            if text_label[x:x + 4] == "sqrt":
+                right_numbers = str(right_check(x, text_label, number_argument_list, argument_list))
+                summ += float(right_numbers)
+
+            match text_label[x]:
+                case "+":
+
+                    left_numbers = str(left_check(x, text_label, number_argument_list, argument_list))
+                    right_numbers = str(right_check(x, text_label, number_argument_list, argument_list))
+
+                    if text_label[x - (len(left_numbers) + 1)] not in argument_list:
+                        summ += float(left_numbers) + float(right_numbers)
+                        print("lewy raz: " + left_numbers)
+                        print("prawy raz: " + right_numbers)
+                    else:
+                        summ += float(right_numbers)
+                        print("prawy dwa: " + right_numbers)
+
+                case "-":
+
+                    left_numbers = str(left_check(x, text_label, number_argument_list, argument_list))
+                    right_numbers = str(right_check(x, text_label, number_argument_list, argument_list))
+
+                    if text_label[x - (len(left_numbers) + 1)] not in argument_list:
+                        summ += float(left_numbers) - float(right_numbers)
+                    else:
+                        summ -= float(right_numbers)
+
+                case "*":
+
+                    left_numbers = str(left_check(x, text_label, number_argument_list, argument_list))
+                    right_numbers = str(right_check(x, text_label, number_argument_list, argument_list))
+
+                    if text_label[x - (len(left_numbers) + 1)] not in argument_list:
+                        summ += float(left_numbers) * float(right_numbers)
+                    else:
+                        summ *= float(right_numbers)
+
+                case "/":
+
+                    left_numbers = str(left_check(x, text_label, number_argument_list, argument_list))
+                    right_numbers = str(right_check(x, text_label, number_argument_list, argument_list))
+
+                    try:
+                        if text_label[x - (len(left_numbers) + 1)] not in argument_list:
+                            summ += float(left_numbers) / float(right_numbers)
+                            print("Halo coś nie tak")
+                        else:
+                            summ /= float(right_numbers)
+                            print("HALO")
+                    except ZeroDivisionError as e:
+                        messagebox.showerror(title="DON'T DIVICE BY ZERO!!!", message="Error: Diviced by zero!")
+                        print("nie dziel przez 0")
+                        break
+
+        print(summ)
+
+        final = str(summ)
+
+        if len(final) >= 15:
+            label_screen.config(font=("Arial", 10), height=3, width=19)
+
+        if final[-2] + final[-1] == ".0":
+            final = int(summ)
+
+        label_screen.config(text=str(final))
+
+    except Exception as e:
+        messagebox.showerror(title="Wrong argument", message="Pls add some number before equal")
+
+
+def new_function(n):
+    match n:
+        case "*":
+            check_argument(n)
+
+        case "/":
+            check_argument(n)
+
+        case "sqrt":
+            if label_screen.cget("text") == "0":
+                label_screen.config(text=n)
+                return
+            else:
+                label_screen.config(text=label_screen.cget("text") + n)
+                return
+
+        case "C":
+            label_screen.config(text="0", font=("Arial", 22), height=1, width=9)
+            return
+
+        case "+":
+            check_argument(n)
+
+        case "-":
+            check_argument(n)
+
+        case "=":
+            text_label = label_screen.cget("text")
+            if text_label == "0" or len(text_label) <= 2:
+                print("Wrong argument")
+            else:
+                equal()
+
+        case _:
+            if label_screen.cget("text") == "0":
+                label_screen.config(text=n)
+                return
+            else:
+                label_screen.config(text=label_screen.cget("text") + n)
+                return
+
+
+window = tk.Tk()
+window.title("Pythonator")
+window.geometry("170x290")
+window.resizable(False, False)
+
+label_screen = tk.Label(window, text="0", height=1, width=9, anchor="e", background="#FFF", font=("Arial", 22))
+label_screen.place(x=5, y=0)
+
+# Function buttons
+function_button_multiple = tk.Button(window, text="*", height=2, width=3, background="#999", command=lambda: {
+    new_function("*")})
+function_button_multiple.place(x=10, y=40)
+
+function_button_multiple = tk.Button(window, text="/", height=2, width=3, background="#999", command=lambda: {
+    new_function("/")})
+function_button_multiple.place(x=50, y=40)
+
+function_button_multiple = tk.Button(window, text="sqrt", height=2, width=3, background="#999", command=lambda: {
+    new_function("sqrt")})
+function_button_multiple.place(x=90, y=40)
+
+function_button_multiple = tk.Button(window, text="C", height=2, width=3, background="#00FC00", command=lambda: {
+    new_function("C")})
+function_button_multiple.place(x=130, y=40)
+
+function_button_multiple = tk.Button(window, text="+", height=2, width=3, background="#999",
+                                     command=lambda: [new_function("+")])
+function_button_multiple.place(x=130, y=90)
+
+function_button_multiple = tk.Button(window, text="-", height=2, width=3, background="#999", command=lambda: {
+    new_function("-")})
+function_button_multiple.place(x=130, y=140)
+
+function_button_multiple = tk.Button(window, text="=", height=2, width=3, background="#999", command=lambda: {
+    new_function("=")})
+function_button_multiple.place(x=130, y=190)
+
+# Number buttons
+button1 = tk.Button(window, text="1", height=2, width=3, background="#FFF", command=lambda: [new_function("1")])
+button1.place(x=10, y=190)
+
+button2 = tk.Button(window, text="2", height=2, width=3, background="#FFF", command=lambda: [new_function("2")])
+button2.place(x=50, y=190)
+
+button3 = tk.Button(window, text="3", height=2, width=3, background="#FFF", command=lambda: [new_function("3")])
+button3.place(x=90, y=190)
+
+button4 = tk.Button(window, text="4", height=2, width=3, background="#FFF", command=lambda: [new_function("4")])
+button4.place(x=10, y=140)
+
+button5 = tk.Button(window, text="5", height=2, width=3, background="#FFF", command=lambda: [new_function("5")])
+button5.place(x=50, y=140)
+
+button6 = tk.Button(window, text="6", height=2, width=3, background="#FFF", command=lambda: [new_function("6")])
+button6.place(x=90, y=140)
+
+button7 = tk.Button(window, text="7", height=2, width=3, background="#FFF", command=lambda: [new_function("7")])
+button7.place(x=10, y=90)
+
+button8 = tk.Button(window, text="8", height=2, width=3, background="#FFF", command=lambda: [new_function("8")])
+button8.place(x=50, y=90)
+
+button9 = tk.Button(window, text="9", height=2, width=3, background="#FFF", command=lambda: [new_function("9")])
+button9.place(x=90, y=90)
+
+button0 = tk.Button(window, text="0", height=2, width=14, background="#FFF", command=lambda: [new_function("0")])
+button0.place(x=10, y=240)
+
+window.mainloop()
